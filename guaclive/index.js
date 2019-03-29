@@ -57,7 +57,7 @@ nms.on('prePublish', (id, StreamPath, args) => {
 
 nms.on('donePublish', (id, StreamPath, args) => {
     axios.post(
-        `${config.guaclive.api_endpoint}/live/publishDone`,
+        `${config.guaclive.api_endpoint}/live/on_publish_done`,
         `name=${args.token}&tcUrl=${StreamPath}`, {
         maxRedirects: 0,
         validateStatus: function (status){
