@@ -1,14 +1,15 @@
 {
-  "name": "node-media-server",
+  "name": "guac-media-server",
   "version": "1.5.0",
   "description": "A Node.js implementation of RTMP Server",
-  "main": "node_media_server.js",
+  "main": "guaclive/index.js",
   "scripts": {
+    "start": "node guaclive/index.js",
     "test": "node app.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/illuspas/Node-Media-Server.git"
+    "url": "git+https://github.com/GuacLive/Guac-Media-Server.git"
   },
   "keywords": [
     "rtmp",
@@ -18,10 +19,11 @@
   "author": "Mingliang Chen",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/illuspas/Node-Media-Server/issues"
+    "url": "https://github.com/GuacLive/Guac-Media-Server/issues"
   },
-  "homepage": "https://github.com/illuspas/Node-Media-Server#readme",
+  "homepage": "https://github.com/GuacLive/Guac-Media-Server#readme",
   "dependencies": {
+    "axios": "^0.18.0",
     "basic-auth-connect": "^1.0.0",
     "chalk": "^2.4.2",
     "dateformat": "^3.0.3",

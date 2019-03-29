@@ -14,6 +14,7 @@ const NodeCoreUtils = require("./node_core_utils");
 const NodeFlvSession = require("./node_flv_session");
 const context = require("./node_core_ctx");
 const Logger = require("./node_core_logger");
+const guac = require('./guac');
 
 const N_CHUNK_STREAM = 8;
 const RTMP_VERSION = 3;
@@ -1015,6 +1016,8 @@ class NodeRtmpSession {
       }
     }
 
+    
+    guac.auth(this, function () {
     if (context.publishers.has(this.publishStreamPath)) {
       Logger.log(`[rtmp publish] Already has a stream. id=${this.id} streamPath=${this.publishStreamPath} streamId=${this.publishStreamId}`);
       this.sendStatusMessage(this.publishStreamId, "error", "NetStream.Publish.BadName", "Stream already publishing");
@@ -1036,6 +1039,7 @@ class NodeRtmpSession {
       }
       context.nodeEvent.emit("postPublish", this.id, this.publishStreamPath, this.publishArgs);
     }
+    }.bind(this));
   }
 
   onPlay(invokeMessage) {
