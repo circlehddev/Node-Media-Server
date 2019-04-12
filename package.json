@@ -1,6 +1,6 @@
 {
   "name": "guac-media-server",
-  "version": "1.5.0",
+  "version": "2.0.3",
   "description": "A Node.js implementation of RTMP Server",
   "main": "guaclive/index.js",
   "scripts": {
