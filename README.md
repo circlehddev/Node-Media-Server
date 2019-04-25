@@ -10,7 +10,8 @@
 A Node.js implementation of RTMP/HTTP-FLV/WS-FLV/HLS/DASH Media Server  
 [中文介绍](https://github.com/illuspas/Node-Media-Server/blob/master/README_CN.md)
 
-![admin](https://github.com/illuspas/Node-Media-Server/raw/master/admin_panel.png)
+![admin](https://raw.githubusercontent.com/illuspas/resources/master/img/admin_panel_dashboard.png)
+![preview](https://raw.githubusercontent.com/illuspas/resources/master/img/admin_panel_streams_preview.png)
 
 **If you like this project you can support me.**  
 <a href="https://www.buymeacoffee.com/illuspas" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/white_img.png" alt="Buy Me A Coffee" style="height: 41px !important;width: 174px !important;box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;-webkit-box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;" ></a>
@@ -510,7 +511,7 @@ var nms = new NodeMediaServer(config)
 nms.run();
 ```
 
-# Remux to HLS/DASH live stream with audio transcode
+# Remux to RTMP/HLS/DASH live stream with audio transcode
 ```js
 const NodeMediaServer = require('node-media-server');
 
@@ -536,6 +537,8 @@ const config = {
         vcParam: [],
         ac: "aac",
         acParam: ['-ab', '64k', '-ac', '1', '-ar', '44100'],
+        rtmp:true,
+        rtmpApp:'live2',
         hls: true,
         hlsFlags: '[hls_time=2:hls_list_size=3:hls_flags=delete_segments]',
         dash: true,
@@ -548,6 +551,8 @@ const config = {
 var nms = new NodeMediaServer(config)
 nms.run();
 ```
+>Remux to RTMP cannot use the same app name
+
 
 # Record to MP4
 ```JS
