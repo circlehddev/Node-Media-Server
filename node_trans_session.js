@@ -23,6 +23,7 @@ class NodeTransSession extends EventEmitter {
     let inPath = 'rtmp://127.0.0.1:' + this.conf.rtmpPort + this.conf.streamPath;
     let ouPath = `${this.conf.mediaroot}/${this.conf.streamApp}/${this.conf.streamName}`;
     let mapStr = '';
+    const random = [...Array(11)].map(i=>(~~(Math.random()*36)).toString(36)).join('');
 
     if (this.conf.rtmp && this.conf.rtmpApp) {
       if (this.conf.rtmpApp === this.conf.streamApp) {
@@ -43,7 +44,7 @@ class NodeTransSession extends EventEmitter {
     if (this.conf.hls) {
       this.conf.hlsFlags = this.conf.hlsFlags ? this.conf.hlsFlags : '';
       let hlsFileName = 'index.m3u8';
-      let mapHls = `${this.conf.hlsFlags}${ouPath}/${hlsFileName}|`;
+      let mapHls = `[${this.conf.hlsFlags}:hls_segment_filename=\'${ouPath}/guaclive_${random}_%d.ts\']${ouPath}/${hlsFileName}|`;
       mapStr += mapHls;
       Logger.log('[Transmuxing HLS] ' + this.conf.streamPath + ' to ' + ouPath + '/' + hlsFileName);
     }
@@ -56,7 +57,7 @@ class NodeTransSession extends EventEmitter {
     }
     mkdirp.sync(ouPath);
     let argv = ['-y', '-probesize', '32', '-flags', 'low_delay', '-fflags', 'nobuffer', '-analyzeduration', '2147483647', '-probesize', '2147483647', '-i', inPath];
-    Array.prototype.push.apply(argv, ['-c:v', vc]);
+    Array.prototype.push.apply(argv, ['-g', '30', '-c:v', vc]);
     Array.prototype.push.apply(argv, this.conf.vcParam);
     Array.prototype.push.apply(argv, ['-c:a', ac]);
     Array.prototype.push.apply(argv, this.conf.acParam);

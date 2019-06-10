@@ -37,7 +37,7 @@ if (conf.ffmpeg_path) {
       app: 'live',
       ac: 'libopus',
       hls: true,
-      hlsFlags: '[hls_time=1:hls_list_size=3600:hls_flags=delete_segments]'
+      hlsFlags: 'hls_time=1:hls_list_size=3600:hls_flags=delete_segments'
       // 2(h) * 60 * 60 / 2(s) = 3600 Make it possible to play for about 2 hours.
     }
   ];
