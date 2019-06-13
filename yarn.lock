@@ -179,6 +179,7 @@ express@^5.0.0-alpha.7:
     methods "~1.1.2"
     on-finished "~2.3.0"
     parseurl "~1.3.2"
+    path-is-absolute "1.0.1"
     proxy-addr "~2.0.4"
     qs "6.5.2"
     range-parser "~1.2.0"

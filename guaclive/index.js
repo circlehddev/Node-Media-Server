@@ -19,7 +19,8 @@ const config = {
   },
   guaclive: {
     api_endpoint: conf.endpoint,
-    ignore_auth: !!conf.ignore_auth
+    ignore_auth: !!conf.ignore_auth, 
+    maxDataRate: conf.maxDataRate || 8000
   }
 };
 
@@ -53,6 +54,20 @@ nms.run();
 
 nms.on('prePublish', (id, StreamPath, args) => {
 
+});
+
+nms.on('onMetaData', (id, metadata) => {
+  console.log('onMetaData', id, metadata);
+  let session = nms.getSession(id);
+  if(metadata.videodatarate > config.guaclive.maxDataRate){
+    session.sendStatusMessage(
+      session.publishStreamId,
+      'error',
+      'NetStream.Publish.Rejected',
+      `Bitrate too high, ${Math.round(Math.floor(metadata.videodatarate))}/${config.guaclive.maxDataRate} kbps (max).`
+    );
+    return session.reject();
+  }
 });
 
 nms.on('donePublish', (id, StreamPath, args) => {
