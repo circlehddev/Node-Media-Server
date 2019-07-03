@@ -93,6 +93,20 @@ class NodeMediaServer {
   getSession(id) {
     return context.sessions.get(id);
   }
+
+  getSessionInfo() {
+    let info = {
+      rtmp: 0,
+      http: 0,
+      ws: 0
+    };
+    for (let session of context.sessions.values()) {
+      info.rtmp += session.TAG === 'rtmp' ? 1 : 0;
+      info.http += session.TAG === 'http-flv' ? 1 : 0;
+      info.ws += session.TAG === 'websocket-flv' ? 1 : 0;
+    }
+    return info;
+  }
 }
 
 module.exports = NodeMediaServer
