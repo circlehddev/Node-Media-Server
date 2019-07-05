@@ -78,6 +78,8 @@ class NodeMediaServer {
     context.nodeEvent.on(eventName, listener);
   }
 
+  events() { return context.nodeEvent; }
+
   stop() {
     if (this.nrs) {
       this.nrs.stop();
