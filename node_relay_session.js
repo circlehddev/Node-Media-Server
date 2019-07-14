@@ -18,7 +18,8 @@ class NodeRelaySession extends EventEmitter {
 
   run() {
     let format = this.conf.ouPath.startsWith('rtsp://') ? 'rtsp' : 'flv';
-    let argv = ['-fflags', 'nobuffer', '-i', this.conf.inPath, '-c', 'copy', '-f', format, this.conf.ouPath];
+    let argv = ['-fflags', 'nobuffer', '-i', this.conf.inPath, '-c', 'copy', '-f', format, this.conf.ouPath,
+		'-stimeout', '10000000 ','-reconnect', '1', '-reconnect_at_eof', '1', '-reconnect_streamed', '1', '-reconnect_delay_max', '2']
     if (this.conf.inPath[0] === '/' || this.conf.inPath[1] === ':') {
       argv.unshift('-1');
       argv.unshift('-stream_loop');
