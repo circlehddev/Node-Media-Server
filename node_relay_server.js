@@ -40,7 +40,9 @@ class NodeRelayServer {
     context.nodeEvent.on('donePlay', this.onDonePlay.bind(this));
     context.nodeEvent.on('postPublish', this.onPostPublish.bind(this));
     context.nodeEvent.on('donePublish', this.onDonePublish.bind(this));
-    this.staticCycle = setInterval(this.onStatic.bind(this), 1000);
+    let updateInterval = this.config.relay.update_interval ?
+      this.config.relay.update_interval : 1000;
+    this.staticCycle = setInterval(this.onStatic.bind(this), updateInterval);
     Logger.log('Node Media Relay Server started');
   }
 
@@ -223,6 +225,8 @@ class NodeRelayServer {
 
   stop() {
     clearInterval(this.staticCycle);
+    this.dynamicSessions.forEach((value, key, map) => { value.end() })
+    this.staticSessions.forEach((value, key, map) => { value.end() })
   }
 }
 
