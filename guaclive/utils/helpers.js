@@ -63,7 +63,7 @@ const generateStreamThumbnail = (streamPath) => {
     inst.unref();
 };
 
-let removeStreamThumbnail = (streampath) => {
+let removeStreamThumbnail = (streamPath) => {
     let path = `media${streamPath}/thumbnail.png`;
     fs.unlink(path, (error) => {
         if(error) Logger.log('[Thumbnail removal] screenshot', error)
