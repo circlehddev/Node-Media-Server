@@ -30,6 +30,7 @@
     "express": "^5.0.0-alpha.7",
     "lodash": "^4.17.11",
     "mkdirp": "^0.5.1",
+    "node-cron": "^2.0.3",
     "ws": "^7.0.0"
   },
   "engines": {

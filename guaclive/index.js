@@ -1,6 +1,8 @@
 const NodeMediaServer = require('../node_media_server');
 const axios = require('axios');
+const cron = require('node-cron')
 // eslint-disable-next-line import/no-unresolved
+const helpers = require('./utils/helpers');
 const conf = require('./config');
 
 const config = {
@@ -69,19 +71,53 @@ nms.on('onMetaData', (id, metadata) => {
   }
 });
 
+nms.on('postPublish', (id, StreamPath, args) => {
+  let session = nms.getSession(id)
+  console.log('[NodeEvent on postPublish]', `id=${id} StreamPath=${StreamPath} args=${JSON.stringify(args)}`);
+  // Create a thumbnail
+  try{
+    helpers.generateStreamThumbnail(session.publishStreamPath);
+  }catch(e){
+  }
+
+  // Generate a thumbnail every 60 seconds
+  try{
+    let task = cron.schedule('* * * * *', () => {
+      helpers.generateStreamThumbnail(session.publishStreamPath)
+    }, {
+      scheduled: false
+    });
+    // Save tasks in the session so we can stop it later
+    session.task = task;
+    // Start the tasks
+    task.start();
+  }catch(e){
+  }
+
+});
+
 nms.on('donePublish', (id, StreamPath, args) => {
-    axios.post(
-        `${config.guaclive.api_endpoint}/live/on_publish_done`,
-        `name=${args.token}&tcUrl=${StreamPath}`, {
+  let session = nms.getSession(id)
+
+  // Stop thumbnail generation cron
+  if(session.task) session.task.stop();
+  // Remove thumbnail
+  try{
+    helpers.removeStreamThumbnail(StreamPath);
+  }catch(e){
+  }
+  axios.post(
+      `${config.guaclive.api_endpoint}/live/on_publish_done`,
+      `name=${args.token}&tcUrl=${StreamPath}`, {
         maxRedirects: 0,
-        validateStatus: function (status){
+        validateStatus: function (status) {
           // Bypass redirect
           return status == 304 || (status >= 200 && status < 300);
         },
         headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
+          'Content-Type': 'application/x-www-form-urlencoded'
         }
-    })
+      })
     .then(response => {
       // eslint-disable-next-line no-console
       console.log('[donePublish]', response);
