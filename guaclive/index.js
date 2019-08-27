@@ -5,8 +5,10 @@ const cron = require('node-cron')
 const helpers = require('./utils/helpers');
 const conf = require('./config');
 
+const IS_DEBUG = process.env.NODE_ENV === 'development';
+
 const config = {
-  logType: conf.debug ? 4 : 2,
+  logType: IS_DEBUG ? 4 : 2,
   rtmp: {
     port: 1935,
     chunk_size: 100000,
@@ -21,7 +23,7 @@ const config = {
   },
   guaclive: {
     api_endpoint: conf.endpoint,
-    ignore_auth: !!conf.ignore_auth, 
+    ignore_auth: !!IS_DEBUG, 
     maxDataRate: conf.maxDataRate || 8000
   }
 };
@@ -38,7 +40,8 @@ if (conf.ffmpeg_path) {
   const tasks = [
     {
       app: 'live',
-      ac: 'libopus',
+      ac: 'copy',
+      vc: 'copy',
       hls: true,
       hlsFlags: 'hls_time=1:hls_list_size=5:hls_flags=delete_segments'
     }
