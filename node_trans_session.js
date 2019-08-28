@@ -43,14 +43,14 @@ class NodeTransSession extends EventEmitter {
     }
     if (this.conf.hls) {
       this.conf.hlsFlags = this.conf.hlsFlags ? this.conf.hlsFlags : '';
-      let hlsFileName = 'index.m3u8';
+      let hlsFileName = this.conf.name ? `${this.conf.name}.m3u8` : 'index.m3u8';
       let mapHls = `[${this.conf.hlsFlags}:hls_segment_filename=\'${ouPath}/guaclive_${random}_%d.ts\']${ouPath}/${hlsFileName}|`;
       mapStr += mapHls;
       Logger.log('[Transmuxing HLS] ' + this.conf.streamPath + ' to ' + ouPath + '/' + hlsFileName);
     }
     if (this.conf.dash) {
       this.conf.dashFlags = this.conf.dashFlags ? this.conf.dashFlags : '';
-      let dashFileName = 'index.mpd';
+      let dashFileName = this.conf.name ? `${this.conf.name}.mpd` : 'index.mpd';
       let mapDash = `${this.conf.dashFlags}${ouPath}/${dashFileName}`;
       mapStr += mapDash;
       Logger.log('[Transmuxing DASH] ' + this.conf.streamPath + ' to ' + ouPath + '/' + dashFileName);
