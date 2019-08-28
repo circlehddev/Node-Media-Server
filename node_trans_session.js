@@ -23,6 +23,9 @@ class NodeTransSession extends EventEmitter {
     let inPath = 'rtmp://127.0.0.1:' + this.conf.rtmpPort + this.conf.streamPath;
     let ouPath = `${this.conf.mediaroot}/${this.conf.streamApp}/${this.conf.streamName}`;
     let mapStr = '';
+    let analyzeDuration = this.conf.analyzeDuration || '1000000'; // used to be 2147483647
+    let probeSize = this.conf.probeSize || '1000000'; // used to be 2147483647
+
     const random = [...Array(11)].map(i=>(~~(Math.random()*36)).toString(36)).join('');
 
     if (this.conf.rtmp && this.conf.rtmpApp) {
@@ -63,7 +66,7 @@ class NodeTransSession extends EventEmitter {
       Logger.log('[Transmuxing FLV] ' + this.conf.streamPath + ' to ' + ouPath + '/' + flvFileName);
     }
     mkdirp.sync(ouPath);
-    let argv = ['-y', '-flags', 'low_delay', '-fflags', 'nobuffer', '-analyzeduration', '2147483647', '-probesize', '2147483647', '-i', inPath];
+    let argv = ['-y', '-flags', 'low_delay', '-fflags', 'nobuffer', '-analyzeduration', analyzeDuration, '-probesize', probeSize, '-i', inPath];
     Array.prototype.push.apply(argv, ['-c:v', vc]);
     Array.prototype.push.apply(argv, this.conf.vcParam);
     Array.prototype.push.apply(argv, ['-c:a', ac]);

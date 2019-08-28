@@ -59,6 +59,8 @@ class NodeTransServer {
     while (i--) {
       let conf = this.config.trans.tasks[i];
       conf.ffmpeg = this.config.trans.ffmpeg;
+      conf.analyzeDuration = this.config.trans.analyzeDuration;
+      conf.probeSize = this.config.trans.probeSize;
       conf.mediaroot = this.config.http.mediaroot;
       conf.rtmpPort = this.config.rtmp.port;
       conf.streamPath = streamPath;
