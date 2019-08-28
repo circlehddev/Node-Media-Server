@@ -55,6 +55,13 @@ class NodeTransSession extends EventEmitter {
       mapStr += mapDash;
       Logger.log('[Transmuxing DASH] ' + this.conf.streamPath + ' to ' + ouPath + '/' + dashFileName);
     }
+    if (this.conf.flv) {
+      this.conf.flvFlags = this.conf.flvFlags ? this.conf.flvFlags : '';
+      let flvFileName = this.conf.name ? `${this.conf.name}.flv` : 'index.flv';
+      let mapFlv = `${this.conf.flvFlags}${ouPath}/${flvFileName}`;
+      mapStr += mapFlv;
+      Logger.log('[Transmuxing FLV] ' + this.conf.streamPath + ' to ' + ouPath + '/' + flvFileName);
+    }
     mkdirp.sync(ouPath);
     let argv = ['-y', '-flags', 'low_delay', '-fflags', 'nobuffer', '-analyzeduration', '2147483647', '-probesize', '2147483647', '-i', inPath];
     Array.prototype.push.apply(argv, ['-c:v', vc]);
