@@ -38,10 +38,44 @@ if (conf.https_port) {
 
 if (conf.ffmpeg_path) {
   const tasks = [
+    // source quality
     {
       app: 'live',
       ac: 'copy',
       vc: 'copy',
+      hls: true,
+      hlsFlags: 'hls_time=1:hls_list_size=5:hls_flags=delete_segments'
+    },
+    // low quality
+    {
+      app: 'live',
+      name: 'low',
+      ac: 'copy',
+      acParam: ['-ab', '32k'],
+      vc: 'copy',
+      vcParam: ['-vc', '128k', '-preset', 'ultrafast'],
+      hls: true,
+      hlsFlags: 'hls_time=1:hls_list_size=5:hls_flags=delete_segments'
+    },
+    // medium quality
+    {
+      app: 'live',
+      name: 'medium',
+      ac: 'copy',
+      acParam: ['-ab', '64k'],
+      vc: 'copy',
+      vcParam: ['-vc', '256k', '-preset', 'ultrafast'],
+      hls: true,
+      hlsFlags: 'hls_time=1:hls_list_size=5:hls_flags=delete_segments'
+    },
+    // high quality
+    {
+      app: 'live',
+      name: 'high',
+      ac: 'copy',
+      acParam: ['-ab', '128k'],
+      vc: 'copy',
+      vcParam: ['-vc', '512k', '-preset', 'ultrafast'],
       hls: true,
       hlsFlags: 'hls_time=1:hls_list_size=5:hls_flags=delete_segments'
     }
