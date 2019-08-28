@@ -44,7 +44,7 @@ class NodeTransSession extends EventEmitter {
     if (this.conf.hls) {
       this.conf.hlsFlags = this.conf.hlsFlags ? this.conf.hlsFlags : '';
       let hlsFileName = this.conf.name ? `${this.conf.name}.m3u8` : 'index.m3u8';
-      let mapHls = `[${this.conf.hlsFlags}:hls_segment_filename=\'${ouPath}/guaclive_${random}_%d.ts\']${ouPath}/${hlsFileName}|`;
+      let mapHls = `[${this.conf.hlsFlags}:hls_segment_filename=\'${ouPath}/guaclive_${this.conf.name || 'index'}_${random}_%d.ts\']${ouPath}/${hlsFileName}|`;
       mapStr += mapHls;
       Logger.log('[Transmuxing HLS] ' + this.conf.streamPath + ' to ' + ouPath + '/' + hlsFileName);
     }
@@ -93,6 +93,8 @@ class NodeTransSession extends EventEmitter {
               || filename.endsWith('.m3u8')
               || filename.endsWith('.mpd')
               || filename.endsWith('.m4s')
+              || filename.endsWith('.flv')
+              || filename.endsWith('.png')
               || filename.endsWith('.tmp')) {
               fs.unlinkSync(ouPath + '/' + filename);
             }
