@@ -61,7 +61,7 @@ class NodeTransSession extends EventEmitter {
     if (this.conf.flv) {
       this.conf.flvFlags = this.conf.flvFlags ? this.conf.flvFlags : '';
       let flvFileName = this.conf.name ? `${this.conf.name}.flv` : 'index.flv';
-      let mapFlv = `${this.conf.flvFlags}${ouPath}/${flvFileName}`;
+      let mapFlv = `${this.conf.flvFlags}${ouPath}/${flvFileName}|`;
       mapStr += mapFlv;
       Logger.log('[Transmuxing FLV] ' + this.conf.streamPath + ' to ' + ouPath + '/' + flvFileName);
     }
