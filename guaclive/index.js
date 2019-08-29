@@ -23,8 +23,9 @@ const config = {
   },
   guaclive: {
     api_endpoint: conf.endpoint,
-    ignore_auth: !!IS_DEBUG, 
-    maxDataRate: conf.maxDataRate || 8000
+    ignore_auth: !!IS_DEBUG,
+    maxDataRate: conf.maxDataRate || 8000,
+    transcode: conf.transcode
   }
 };
 
@@ -37,15 +38,8 @@ if (conf.https_port) {
 }
 
 if (conf.ffmpeg_path) {
-  const tasks = [
-    // source quality
-    {
-      app: 'live',
-      ac: 'copy',
-      vc: 'copy',
-      hls: true,
-      hlsFlags: 'hls_time=1:hls_list_size=5:hls_flags=delete_segments'
-    },
+  const transcodeTasks = [
+    ,
     // low quality
     {
       app: 'live',
@@ -80,10 +74,21 @@ if (conf.ffmpeg_path) {
       hlsFlags: 'hls_time=1:hls_list_size=5:hls_flags=delete_segments'
     }
   ];
+  const tasks = [
+    // source quality
+    {
+      app: 'live',
+      ac: 'copy',
+      vc: 'copy',
+      hls: true,
+      hlsFlags: 'hls_time=1:hls_list_size=5:hls_flags=delete_segments'
+    }
+  ];
+  const combinedTasks = config.guaclive.transcode ? Object.assign(tasks, transcodeTasks) : tasks;
 
   config.trans = {
     ffmpeg: conf.ffmpeg_path,
-    tasks
+    tasks: combinedTasks
   };
 }
 
