@@ -49,7 +49,7 @@ if (conf.ffmpeg_path) {
     // low quality
     {
       app: 'live',
-      name: 'low',
+      name: '_low',
       ac: 'copy',
       acParam: ['-ab', '32k'],
       vc: 'copy',
@@ -60,7 +60,7 @@ if (conf.ffmpeg_path) {
     // medium quality
     {
       app: 'live',
-      name: 'medium',
+      name: '_medium',
       ac: 'copy',
       acParam: ['-ab', '64k'],
       vc: 'copy',
@@ -71,7 +71,7 @@ if (conf.ffmpeg_path) {
     // high quality
     {
       app: 'live',
-      name: 'high',
+      name: '_high',
       ac: 'copy',
       acParam: ['-ab', '128k'],
       vc: 'copy',
