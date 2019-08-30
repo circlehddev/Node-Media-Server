@@ -162,6 +162,7 @@ class NodeHttpServer {
     }
     context.sessions.forEach((session, id) => {
       if (session instanceof NodeFlvSession) {
+        session.stop();
         session.req.destroy();
         context.sessions.delete(id);
       }
@@ -171,7 +172,6 @@ class NodeHttpServer {
   onConnect(req, res) {
     let session = new NodeFlvSession(this.config, req, res);
     session.run();
-
   }
 }
 

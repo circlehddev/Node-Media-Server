@@ -17,8 +17,6 @@ const context = require("./node_core_ctx");
 const Logger = require("./node_core_logger");
 const helpers = require('./guaclive/utils/helpers');
 
-const N_CHUNK_STREAM = 8;
-const RTMP_VERSION = 3;
 const RTMP_HANDSHAKE_SIZE = 1536;
 const RTMP_HANDSHAKE_UNINIT = 0;
 const RTMP_HANDSHAKE_0 = 1;
@@ -63,10 +61,6 @@ const RTMP_TYPE_VIDEO = 9;
 const RTMP_TYPE_FLEX_STREAM = 15; // AMF3
 const RTMP_TYPE_DATA = 18; // AMF0
 
-/* Shared Object Message */
-const RTMP_TYPE_FLEX_OBJECT = 16; // AMF3
-const RTMP_TYPE_SHARED_OBJECT = 19; // AMF0
-
 /* Command Message */
 const RTMP_TYPE_FLEX_MESSAGE = 17; // AMF3
 const RTMP_TYPE_INVOKE = 20; // AMF0
@@ -80,9 +74,6 @@ const RTMP_PING_TIMEOUT = 30000;
 
 const STREAM_BEGIN = 0x00;
 const STREAM_EOF = 0x01;
-const STREAM_DRY = 0x02;
-const STREAM_EMPTY = 0x1f;
-const STREAM_READY = 0x20;
 
 const RtmpPacket = {
   create: (fmt = 0, cid = 0) => {
@@ -190,17 +181,17 @@ class NodeRtmpSession {
     if (this.isStarting) {
       this.isStarting = false;
 
+      if (this.pingInterval != null) {
+        clearInterval(this.pingInterval);
+        this.pingInterval = null;
+      }
+
       if (this.playStreamId > 0) {
         this.onDeleteStream({ streamId: this.playStreamId });
       }
 
       if (this.publishStreamId > 0) {
         this.onDeleteStream({ streamId: this.publishStreamId });
-      }
-
-      if (this.pingInterval != null) {
-        clearInterval(this.pingInterval);
-        this.pingInterval = null;
       }
 
       Logger.log(`[rtmp disconnect] id=${this.id}`);

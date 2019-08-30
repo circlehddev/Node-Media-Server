@@ -52,6 +52,13 @@ class NodeTransServer {
     Logger.log(`Node Media Trans Server started for apps: [ ${apps}] , MediaRoot: ${this.config.http.mediaroot}, ffmpeg version: ${version}`);
   }
 
+  stop() {
+    this.transSessions.forEach((session, id) => {
+      session.end();
+      // this.transSessions.delete(id);
+    });
+  }
+
   onPostPublish(id, streamPath, args) {
     let regRes = /\/(.*)\/(.*)/gi.exec(streamPath);
     let [app, name] = _.slice(regRes, 1);
