@@ -23,17 +23,12 @@
   },
   "homepage": "https://github.com/GuacLive/Guac-Media-Server#readme",
   "dependencies": {
-    "axios": "^0.19",
+    "axios": "^0.19.0",
     "basic-auth-connect": "^1.0.0",
     "chalk": "^2.4.2",
     "dateformat": "^3.0.3",
-<<<<<<< HEAD
     "express": "^5.0.0-alpha.7",
-    "lodash": "^4.17.11",
-=======
-    "express": "^4.16.4",
     "lodash": ">=4.17.13",
->>>>>>> upstream/master
     "mkdirp": "^0.5.1",
     "node-cron": "^2.0.3",
     "ws": "^7.0.0"

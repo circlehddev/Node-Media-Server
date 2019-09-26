@@ -6,8 +6,53 @@ const Logger = require('../../node_core_logger');
 const config = require('../config');
 const cmd = config.ffmpeg_path;
 
+const express = require('express');
+const bodyParser = require('body-parser');
+
+const router = context => {
+  const router = express.Router();
+
+  router.use(
+    bodyParser.urlencoded({
+      extended: true
+    })
+  );
+  router.use(bodyParser.json());
+
+  router.post('/stop', (req, res) => {
+    const { stream } = req.body;
+    const { authorization } = req.headers;
+    const path = '/live/' + stream;
+
+    let authorization;
+
+    if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
+        authorization = req.headers.authorization.split(' ')[1];
+    }
+
+    if (authorization !== config.api_key) {
+      return res.end();
+    }
+
+    const id = context.publishers.get(path);
+    if (!id) {
+      return res.end();
+    }
+
+    const session = context.sessions.get(id);
+    if (!session) {
+      return res.end();
+    }
+
+    session.reject();
+  });
+
+  return router;
+};
+
+
 const auth = (data, callback) => {
-    if(data.config.guaclive.ignore_auth){
+    if(data.config.misc.ignore_auth){
         callback();
         return;
     }
@@ -18,7 +63,7 @@ const auth = (data, callback) => {
     }
 
     axios.post(
-            `${data.config.guaclive.api_endpoint}/live/publish`,
+            `${data.config.misc.api_endpoint}/live/publish`,
             `name=${data.publishArgs.token}&tcUrl=${data.publishStreamPath}`, {
                 maxRedirects: 0,
                 validateStatus: (status) => {
@@ -70,6 +115,7 @@ let removeStreamThumbnail = (streamPath) => {
     })
 }
 module.exports = {
+    router,
     auth,
     generateStreamThumbnail,
     removeStreamThumbnail

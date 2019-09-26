@@ -20,6 +20,8 @@ const HTTP_MEDIAROOT = './media';
 const Logger = require('./node_core_logger');
 const context = require('./node_core_ctx');
 
+const misc = require('./misc');
+
 const streamsRoute = require('./api/routes/streams');
 const serverRoute = require('./api/routes/server');
 const relayRoute = require('./api/routes/relay');
@@ -54,10 +56,11 @@ class NodeHttpServer {
 
     if (this.config.auth && this.config.auth.api) {
       app.use(['/api/*', '/static/*', '/admin/*'], basicAuth(this.config.auth.api_user, this.config.auth.api_pass));
+      app.use('/api/streams', streamsRoute(context));
+      app.use('/api/server', serverRoute(context));
+      app.use('/api/relay', relayRoute(context));
     }
-    app.use('/api/streams', streamsRoute(context));
-    app.use('/api/server', serverRoute(context));
-    app.use('/api/relay', relayRoute(context));
+    app.use('/api/misc', misc.router(context));
 
     app.use(Express.static(path.join(__dirname + '/public')));
     app.use(Express.static(this.mediaroot));

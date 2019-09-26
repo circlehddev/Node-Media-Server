@@ -35,3 +35,4 @@ node_modules
 # Guac-additions
 .vscode
 media
+misc/config.js

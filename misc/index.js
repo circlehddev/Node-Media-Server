@@ -21,7 +21,7 @@ const config = {
     allow_origin: '*',
     mediaroot: './media'
   },
-  guaclive: {
+  misc: {
     api_endpoint: conf.endpoint,
     ignore_auth: !!IS_DEBUG,
     maxDataRate: conf.maxDataRate || 8000,
@@ -84,7 +84,7 @@ if (conf.ffmpeg_path) {
       hlsFlags: 'hls_time=1:hls_list_size=5:hls_flags=delete_segments'
     }
   ];
-  const combinedTasks = config.guaclive.transcode ? Object.assign(tasks, transcodeTasks) : tasks;
+  const combinedTasks = config.misc.transcode ? Object.assign(tasks, transcodeTasks) : tasks;
 
   config.trans = {
     ffmpeg: conf.ffmpeg_path,
@@ -94,10 +94,6 @@ if (conf.ffmpeg_path) {
 
 const nms = new NodeMediaServer(config);
 nms.run();
-
-nms.on('prePublish', (id, StreamPath, args) => {
-
-});
 
 nms.on('onMetaData', (id, metadata) => {
   console.log('onMetaData', id, metadata);

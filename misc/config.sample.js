@@ -1,7 +1,8 @@
 module.exports = {
-    endpoint: 'http://api.local.guac.live',
+    endpoint: 'http://api.example.com',
+    api_key: 'xx',
     http_port: 8000,
-    transcode: false,
+    transcode: true,
     /*
     https_port: 8443,
     https_cert: '/path/to/cert.pem',
