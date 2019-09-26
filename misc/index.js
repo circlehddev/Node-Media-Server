@@ -9,6 +9,11 @@ const IS_DEBUG = process.env.NODE_ENV === 'development';
 
 const config = {
   logType: IS_DEBUG ? 4 : 2,
+  auth: {
+    api: true,
+    api_user: conf.api_user,
+    api_pass: conf.api_pass
+  },
   rtmp: {
     port: 1935,
     chunk_size: 100000,
@@ -23,6 +28,7 @@ const config = {
   },
   misc: {
     api_endpoint: conf.endpoint,
+    api_key: conf.api_key,
     ignore_auth: !!IS_DEBUG,
     maxDataRate: conf.maxDataRate || 8000,
     transcode: conf.transcode
