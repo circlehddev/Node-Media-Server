@@ -21,18 +21,7 @@ const router = context => {
 
   router.post('/stop', (req, res) => {
     const { stream } = req.body;
-    const { authorization } = req.headers;
     const path = '/live/' + stream;
-
-    var token;
-
-    if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
-        token = req.headers.authorization.split(' ')[1];
-    }
-
-    if (token !== config.api_key) {
-      return res.end();
-    }
 
     const id = context.publishers.get(path);
     if (!id) {
