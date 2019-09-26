@@ -9,7 +9,7 @@ const Fs = require('fs');
 const path = require('path');
 const Http = require('http');
 const Https = require('https');
-const WebSocket = require('ws');
+const { WebSocketServer } = require('@clusterws/cws');
 const Express = require('express');
 const bodyParser = require('body-parser');
 const basicAuth = require('basic-auth-connect');
@@ -100,7 +100,7 @@ class NodeHttpServer {
       Logger.log('Node Media Http Server Close.');
     });
 
-    this.wsServer = new WebSocket.Server({ server: this.httpServer });
+    this.wsServer = new WebSocketServer({ server: this.httpServer });
 
     this.wsServer.on('connection', (ws, req) => {
       req.nmsConnectionType = 'ws';
@@ -127,7 +127,7 @@ class NodeHttpServer {
         Logger.log('Node Media Https Server Close.');
       });
 
-      this.wssServer = new WebSocket.Server({ server: this.httpsServer });
+      this.wssServer = new WebSocketServer({ server: this.httpsServer });
 
       this.wssServer.on('connection', (ws, req) => {
         req.nmsConnectionType = 'ws';
