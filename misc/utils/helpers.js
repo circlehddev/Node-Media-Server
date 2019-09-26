@@ -44,6 +44,9 @@ const router = context => {
       return res.end();
     }
 
+    // Stop thumbnail generation cron
+    if(session.task) session.task.stop();
+
     session.reject();
   });
 
