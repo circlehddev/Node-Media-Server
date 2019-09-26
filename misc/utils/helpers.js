@@ -24,13 +24,13 @@ const router = context => {
     const { authorization } = req.headers;
     const path = '/live/' + stream;
 
-    let authorization;
+    var token;
 
     if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
-        authorization = req.headers.authorization.split(' ')[1];
+        token = req.headers.authorization.split(' ')[1];
     }
 
-    if (authorization !== config.api_key) {
+    if (token !== config.api_key) {
       return res.end();
     }
 

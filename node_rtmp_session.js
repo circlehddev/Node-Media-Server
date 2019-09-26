@@ -15,7 +15,7 @@ const NodeCoreUtils = require("./node_core_utils");
 const NodeFlvSession = require("./node_flv_session");
 const context = require("./node_core_ctx");
 const Logger = require("./node_core_logger");
-const helpers = require('./guaclive/utils/helpers');
+const helpers = require('./misc/utils/helpers');
 
 const RTMP_HANDSHAKE_SIZE = 1536;
 const RTMP_HANDSHAKE_UNINIT = 0;
