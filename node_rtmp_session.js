@@ -42,6 +42,8 @@ const RTMP_CHANNEL_AUDIO = 4;
 const RTMP_CHANNEL_VIDEO = 5;
 const RTMP_CHANNEL_DATA = 6;
 
+const RTMP_PUBLISH_ONDATE_TIME = 30; 
+
 const rtmpHeaderSize = [11, 7, 3, 0];
 
 /* Protocol Control Messages */
@@ -165,6 +167,7 @@ class NodeRtmpSession {
 
     this.players = new Set();
     this.numPlayCache = 0;
+
     context.sessions.set(this.id, this);
   }
 
@@ -214,17 +217,17 @@ class NodeRtmpSession {
   }
 
   onSocketClose() {
-    // Logger.log('onSocketClose');
+    Logger.log('onSocketClose');
     this.stop();
   }
 
   onSocketError(e) {
-    // Logger.log('onSocketError', e);
+    Logger.log('onSocketError', e);
     this.stop();
   }
 
   onSocketTimeout() {
-    // Logger.log('onSocketTimeout');
+    Logger.log('onSocketTimeout');
     this.stop();
   }
 
@@ -232,6 +235,9 @@ class NodeRtmpSession {
     let bytes = data.length;
     let p = 0;
     let n = 0;
+    if(this.isPublishing){
+      this.lastOnDataTime = new Date();
+    }
     while (bytes > 0) {
       switch (this.handshakeState) {
         case RTMP_HANDSHAKE_UNINIT:
@@ -1022,30 +1028,42 @@ class NodeRtmpSession {
         return;
       }
     }
-
     
     helpers.auth(this, function () {
-    if (context.publishers.has(this.publishStreamPath)) {
-      Logger.log(`[rtmp publish] Already has a stream. id=${this.id} streamPath=${this.publishStreamPath} streamId=${this.publishStreamId}`);
-      this.sendStatusMessage(this.publishStreamId, "error", "NetStream.Publish.BadName", "Stream already publishing");
-    } else if (this.isPublishing) {
-      Logger.log(`[rtmp publish] NetConnection is publishing. id=${this.id} streamPath=${this.publishStreamPath} streamId=${this.publishStreamId}`);
-      this.sendStatusMessage(this.publishStreamId, "error", "NetStream.Publish.BadConnection", "Connection already publishing");
-    } else {
-      Logger.log(`[rtmp publish] New stream. id=${this.id} streamPath=${this.publishStreamPath} streamId=${this.publishStreamId}`);
-      context.publishers.set(this.publishStreamPath, this.id);
-      this.isPublishing = true;
+      let newPublishFunc = () => {
+        Logger.log(`[rtmp publish] New stream. id=${this.id} streamPath=${this.publishStreamPath} streamId=${this.publishStreamId}`);
+        context.publishers.set(this.publishStreamPath, this.id);
+        this.isPublishing = true;
+        this.lastOnDataTime = new Date();
 
-      this.sendStatusMessage(this.publishStreamId, "status", "NetStream.Publish.Start", `${this.publishStreamPath} is now published.`);
-      for (let idlePlayerId of context.idlePlayers) {
-        let idlePlayer = context.sessions.get(idlePlayerId);
-        if (idlePlayer.playStreamPath === this.publishStreamPath) {
-          idlePlayer.onStartPlay();
-          context.idlePlayers.delete(idlePlayerId);
+        this.sendStatusMessage(this.publishStreamId, "status", "NetStream.Publish.Start", `${this.publishStreamPath} is now published.`);
+        for (let idlePlayerId of context.idlePlayers) {
+          let idlePlayer = context.sessions.get(idlePlayerId);
+          if (idlePlayer.playStreamPath === this.publishStreamPath) {
+            idlePlayer.onStartPlay();
+            context.idlePlayers.delete(idlePlayerId);
+          }
         }
+        context.nodeEvent.emit("postPublish", this.id, this.publishStreamPath, this.publishArgs);
       }
-      context.nodeEvent.emit("postPublish", this.id, this.publishStreamPath, this.publishArgs);
-    }
+      if (context.publishers.has(this.publishStreamPath)) {
+        let publisherId = context.publishers.get(this.publishStreamPath);
+        let publisher = context.sessions.get(publisherId);
+        let lastOnDataTime = publisher.lastOnDataTime
+        if(!lastOnDataTime || Math.abs((new Date()).getTime() - lastOnDataTime.getTime()) / 1000 > RTMP_PUBLISH_ONDATE_TIME ){
+            Logger.log(`[rtmp publish] Already has a stream. id=${this.id} streamPath=${this.publishStreamPath} streamId=${this.publishStreamId}, but it's none ondata greater then ${RTMP_PUBLISH_ONDATE_TIME} secs`);
+            publisher.stop()
+            newPublishFunc()
+            return
+        }
+        Logger.log(`[rtmp publish] Already has a stream. id=${this.id} streamPath=${this.publishStreamPath} streamId=${this.publishStreamId}`);
+        this.sendStatusMessage(this.publishStreamId, "error", "NetStream.Publish.BadName", "Stream already publishing");
+      } else if (this.isPublishing) {
+        Logger.log(`[rtmp publish] NetConnection is publishing. id=${this.id} streamPath=${this.publishStreamPath} streamId=${this.publishStreamId}`);
+        this.sendStatusMessage(this.publishStreamId, "error", "NetStream.Publish.BadConnection", "Connection already publishing");
+      } else {
+          newPublishFunc()
+      }
     }.bind(this));
   }
 
