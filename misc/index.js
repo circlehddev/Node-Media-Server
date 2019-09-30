@@ -98,7 +98,7 @@ nms.run();
 nms.on('onMetaData', (id, metadata) => {
   console.log('onMetaData', id, metadata);
   let session = nms.getSession(id);
-  if(metadata.videodatarate > config.guaclive.maxDataRate){
+  if(metadata.videodatarate > config.misc.maxDataRate){
     session.sendStatusMessage(
       session.publishStreamId,
       'error',
