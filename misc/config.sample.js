@@ -1,6 +1,7 @@
 module.exports = {
     endpoint: 'http://api.example.com',
-    api_key: 'xx',
+    api_user: 'nms',
+    api_pass: 'nms',
     http_port: 8000,
     transcode: true,
     /*
