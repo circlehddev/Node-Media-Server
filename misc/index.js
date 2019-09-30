@@ -109,7 +109,7 @@ nms.on('onMetaData', (id, metadata) => {
       session.publishStreamId,
       'error',
       'NetStream.Publish.Rejected',
-      `Bitrate too high, ${Math.round(Math.floor(metadata.videodatarate))}/${config.guaclive.maxDataRate} kbps (max).`
+      `Bitrate too high, ${Math.round(Math.floor(metadata.videodatarate))}/${config.misc.maxDataRate} kbps (max).`
     );
     return session.reject();
   }
@@ -151,7 +151,7 @@ nms.on('donePublish', (id, StreamPath, args) => {
   }catch(e){
   }
   axios.post(
-      `${config.guaclive.api_endpoint}/live/on_publish_done`,
+      `${config.misc.api_endpoint}/live/on_publish_done`,
       `name=${args.token}&tcUrl=${StreamPath}`, {
         maxRedirects: 0,
         validateStatus: function (status) {
