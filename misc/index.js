@@ -147,7 +147,7 @@ nms.on('donePublish', (id, StreamPath, args) => {
   if(session.task) session.task.stop();
   // Remove thumbnail
   try{
-    helpers.removeStreamThumbnail(StreamPath);
+    helpers.removeStreamThumbnail(session.publishStreamPath);
   }catch(e){
   }
   axios.post(
