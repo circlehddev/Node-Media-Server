@@ -6,7 +6,9 @@
 const Logger = require('./node_core_logger');
 
 const EventEmitter = require('events');
-const { spawn } = require('child_process');
+const {
+  spawn
+} = require('child_process');
 const dateFormat = require('dateformat');
 const mkdirp = require('mkdirp');
 const fs = require('fs');
@@ -26,7 +28,7 @@ class NodeTransSession extends EventEmitter {
     let analyzeDuration = this.conf.analyzeDuration || '1000000'; // used to be 2147483647
     let probeSize = this.conf.probeSize || '1000000'; // used to be 2147483647
 
-    const random = [...Array(11)].map(i=>(~~(Math.random()*36)).toString(36)).join('');
+    const random = [...Array(11)].map(i => (~~(Math.random() * 36)).toString(36)).join('');
 
     if (this.conf.rtmp && this.conf.rtmpApp) {
       if (this.conf.rtmpApp === this.conf.streamApp) {
@@ -72,7 +74,9 @@ class NodeTransSession extends EventEmitter {
     Array.prototype.push.apply(argv, ['-c:a', ac]);
     Array.prototype.push.apply(argv, this.conf.acParam);
     Array.prototype.push.apply(argv, ['-f', 'tee', '-map', '0:a?', '-map', '0:v?', mapStr]);
-    argv = argv.filter((n) => { return n }); //去空
+    argv = argv.filter((n) => {
+      return n
+    }); //去空
     this.ffmpeg_exec = spawn(this.conf.ffmpeg, argv);
     this.ffmpeg_exec.on('error', (e) => {
       Logger.ffdebug(e);
@@ -89,24 +93,24 @@ class NodeTransSession extends EventEmitter {
     this.ffmpeg_exec.on('close', (code) => {
       Logger.log('[Transmuxing end] ' + this.conf.streamPath);
       this.emit('end');
-      fs.readdirSync(ouPath, function (err, files) {
+      fs.readdir(ouPath, function (err, files) {
         if (!err) {
           files.forEach((filename) => {
-            if (filename.endsWith('.ts')
-              || filename.endsWith('.m3u8')
-              || filename.endsWith('.mpd')
-              || filename.endsWith('.m4s')
-              || filename.endsWith('.flv')
-              || filename.endsWith('.png')
-              || filename.endsWith('.tmp')) {
+            if (filename.endsWith('.ts') ||
+            filename.endsWith('.m3u8') ||
+            filename.endsWith('.mpd') ||
+            filename.endsWith('.m4s') ||
+            filename.endsWith('.flv') ||
+            filename.endsWith('.png') ||
+            filename.endsWith('.tmp')) {
               fs.unlinkSync(ouPath + '/' + filename);
             }
-		  });
+          })
         }
-	  });
-	  if (this.conf.hls) {
-		  fs.writeFileSync(ouPath + '/' + this.hlsFileName, '#EXTM3U\n');
-	  }
+      });
+      if (this.conf.hls) {
+        fs.writeFileSync(ouPath + '/' + this.hlsFileName, '#EXTM3U\n');
+      }
     });
   }
 
