@@ -103,13 +103,17 @@ class NodeTransSession extends EventEmitter {
             filename.endsWith('.flv') ||
             filename.endsWith('.png') ||
             filename.endsWith('.tmp')) {
-              fs.unlinkSync(ouPath + '/' + filename);
+              try {
+                fs.unlinkSync(ouPath + '/' + filename);
+              } catch (e) {}
             }
           })
         }
       });
       if (this.conf.hls) {
-        fs.writeFileSync(ouPath + '/' + this.hlsFileName, '#EXTM3U\n');
+        try {
+          fs.writeFileSync(ouPath + '/' + this.hlsFileName, '#EXTM3U\n');
+        } catch(e) {}
       }
     });
   }
