@@ -3,6 +3,7 @@ const axios = require('axios');
 const cron = require('node-cron')
 // eslint-disable-next-line import/no-unresolved
 const helpers = require('./utils/helpers');
+const Logger = require('../node_core_logger');
 const conf = require('./config');
 
 const IS_DEBUG = process.env.NODE_ENV === 'development';
@@ -31,6 +32,8 @@ const config = {
     api_key: conf.api_key,
     ignore_auth: !!IS_DEBUG,
     maxDataRate: conf.maxDataRate || 8000,
+    dataRateCheckInterval: conf.dataRateCheckInterval || 3,
+    dataRateCheckCount: conf.dataRateCheckCount || 5, 
     transcode: conf.transcode
   }
 };
@@ -105,6 +108,7 @@ nms.on('onMetaData', (id, metadata) => {
   console.log('onMetaData', id, metadata);
   let session = nms.getSession(id);
   if(metadata.videodatarate > config.misc.maxDataRate){
+    Logger.error('Bitrate too high', `${Math.round(Math.floor(metadata.videodatarate))}/${config.misc.maxDataRate} kbps (max).`);
     session.sendStatusMessage(
       session.publishStreamId,
       'error',

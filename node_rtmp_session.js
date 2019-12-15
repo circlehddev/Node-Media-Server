@@ -171,6 +171,10 @@ class NodeRtmpSession {
     this.numPlayCache = 0;
 
     context.sessions.set(this.id, this);
+    
+    this.totalBytes = 0;
+    this.exceedDataRateCount = 0;
+    this.dataRateCheck = null;
   }
 
   run() {
@@ -190,6 +194,14 @@ class NodeRtmpSession {
         clearInterval(this.pingInterval);
         this.pingInterval = null;
       }
+
+      if (this.dataRateCheck != null) {
+        clearInterval(this.dataRateCheck);
+        this.dataRateCheck = null;
+      }
+
+      this.totalBytes = 0;
+      this.exceedDataRateCount = 0;
 
       if (this.playStreamId > 0) {
         this.onDeleteStream({ streamId: this.playStreamId });
@@ -1068,6 +1080,29 @@ class NodeRtmpSession {
           }
         }
         context.nodeEvent.emit("postPublish", this.id, this.publishStreamPath, this.publishArgs);
+
+        this.dataRateCheck = setInterval(() => {
+          const bytes = this.socket.bytesRead - this.totalBytes;
+          this.totalBytes += bytes;
+          const dataRate = bytes / this.config.misc.dataRateCheckInterval / 125; // Kbps
+  
+          if (dataRate > this.config.misc.maxDataRate + 10000) {
+            this.exceedDataRateCount++;
+          } else {
+            this.exceedDataRateCount = 0;
+          }
+  
+          if (this.exceedDataRateCount >= this.config.misc.dataRateCheckCount) {
+            Logger.error('Bitrate too high', `${Math.round(Math.floor(metadata.videodatarate))}/${config.misc.maxDataRate} kbps (max).`);
+            this.sendStatusMessage(
+              this.publishStreamId,
+              'error',
+              'NetStream.Publish.Rejected',
+              `Bitrate too high, ${Math.round(Math.floor(dataRate))}/${config.misc.maxDataRate} kbps (max).`
+            );
+            this.reject();
+          }
+        }, this.config.misc.dataRateCheckInterval * 1000);
       }
       if (context.publishers.has(this.publishStreamPath)) {
         let publisherId = context.publishers.get(this.publishStreamPath);
