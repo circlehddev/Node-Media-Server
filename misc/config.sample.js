@@ -9,5 +9,13 @@ module.exports = {
     https_cert: '/path/to/cert.pem',
     https_key: '/path/to/key.pem',
     */
+    s3: {
+        accessKey: '',
+        secret: '',
+        bucket: '',
+        endpoint: '',
+        concurrency: 4,
+        publishUrl: ''
+    },
    ffmpeg_path: '/usr/bin/ffmpeg'
   };

@@ -73,6 +73,9 @@ class NodeTransSession extends EventEmitter {
     Array.prototype.push.apply(argv, this.conf.vcParam);
     Array.prototype.push.apply(argv, ['-c:a', ac]);
     Array.prototype.push.apply(argv, this.conf.acParam);
+    if (this.conf.rec) {
+      Array.prototype.push.apply(argv, ['-t', '14400']);
+    }
     Array.prototype.push.apply(argv, ['-f', 'tee', '-map', '0:a?', '-map', '0:v?', mapStr]);
     argv = argv.filter((n) => {
       return n
@@ -93,6 +96,17 @@ class NodeTransSession extends EventEmitter {
     this.ffmpeg_exec.on('close', (code) => {
       Logger.log('[Transmuxing end] ' + this.conf.streamPath);
       this.emit('end');
+
+      const date = new Date();
+      const key = `live/archives/${date.getFullYear()}_${(`0${date.getMonth() + 1}`).slice(-2)}/${random}/`;
+
+      if (this.conf.rec) {
+        const archive = spawn('node', ['archive.js', random, user, key, ((date - start) / 1000).toFixed(), ouPath]);
+        archive.stderr.pipe(process.stderr);
+        archive.stdout.pipe(process.stdout);
+        return;
+      }
+
       fs.readdir(ouPath, function (err, files) {
         if (!err) {
           files.forEach((filename) => {
