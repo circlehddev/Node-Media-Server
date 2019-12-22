@@ -25,7 +25,7 @@ const upload = async data => {
 
 const uploadThumb = async () => {
   try {
-    const thumb = await axios.get(`https://stream.guac.live/live/${streamName}/thumbnail.jpg?v=${Math.floor((new Date().getTime() - 15000) / 60000)}`,
+    const thumb = await axios.get(`http://127.0.0.1:${config.http_port}/live/${streamName}/thumbnail.jpg?v=${Math.floor((new Date().getTime() - 15000) / 60000)}`,
       {responseType: 'arraybuffer'});
     await upload({
       Bucket: config.s3.bucket,
@@ -66,13 +66,20 @@ const uploadVideos = async retry => {
   if (retry) return;
   setTimeout(() => fs.rmdirSync(ouPath), 10000);
   axios.post(
-    `${config.misc.api_endpoint}/live/archive`, {
-		streamName,
-		duration,
-		id,
-		thumbnail: encodeURIComponent(`https://${config.s3.publishUrl}/${key}thumbnail.jpg`),
-		stream: encodeURIComponent(`https://${config.s3.publishUrl}/${key}index.m3u8`)
-	}
+    `${config.misc.api_endpoint}/live/archive`,
+    {
+      streamName,
+      duration,
+      id,
+      thumbnail: encodeURIComponent(`https://${config.s3.publishUrl}/${key}thumbnail.jpg`),
+      stream: encodeURIComponent(`https://${config.s3.publishUrl}/${key}index.m3u8`),
+      secret: config.s3.secret
+    },
+    {
+      headers: {
+        'Authorization': `Bearer ${config.api_secret}`
+      }
+    }
   );
 };
 
