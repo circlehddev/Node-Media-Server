@@ -29,6 +29,7 @@ class NodeTransSession extends EventEmitter {
     let probeSize = this.conf.probeSize || '1000000'; // used to be 2147483647
 
     const random = [...Array(11)].map(i => (~~(Math.random() * 36)).toString(36)).join('');
+    if(this.conf.rec && !this.conf.name) this.conf.name = 'archive';
 
     if (this.conf.rtmp && this.conf.rtmpApp) {
       if (this.conf.rtmpApp === this.conf.streamApp) {
