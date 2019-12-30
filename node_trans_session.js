@@ -102,7 +102,7 @@ class NodeTransSession extends EventEmitter {
       const key = `live/archives/${date.getFullYear()}_${(`0${date.getMonth() + 1}`).slice(-2)}/${random}/`;
 
       if (this.conf.rec) {
-        const archive = spawn('node', ['archive.js', random, user, key, ((date - start) / 1000).toFixed(), ouPath]);
+        const archive = spawn('node', ['archive.js', random, this.conf.streamName, key, ((date - start) / 1000).toFixed(), ouPath]);
         archive.stderr.pipe(process.stderr);
         archive.stdout.pipe(process.stdout);
         return;
