@@ -5,6 +5,7 @@ module.exports = {
     api_secret: 'nms',
     http_port: 8000,
     transcode: true,
+    archive: false,
     /*
     https_port: 8443,
     https_cert: '/path/to/cert.pem',

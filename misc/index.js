@@ -34,7 +34,8 @@ const config = {
     maxDataRate: conf.maxDataRate || 8000,
     dataRateCheckInterval: conf.dataRateCheckInterval || 3,
     dataRateCheckCount: conf.dataRateCheckCount || 5, 
-    transcode: conf.transcode
+    transcode: conf.transcode || true,
+    archive: conf.archive || false,
   }
 };
 
@@ -93,6 +94,17 @@ if (conf.ffmpeg_path) {
       hlsFlags: 'hls_time=1:hls_list_size=5:hls_flags=delete_segments'
     }
   ];
+  if(config.archive){
+    tasks.push(
+      {
+        app: 'live',
+        ac: 'copy',
+        vc: 'copy',
+        hls: true,
+        rec: true,
+        hlsFlags: 'hls_time=15:hls_list_size=0'
+      });
+  }
   const combinedTasks = config.misc.transcode ? Object.assign(tasks, transcodeTasks) : tasks;
 
   config.trans = {
