@@ -34,8 +34,8 @@ const config = {
     maxDataRate: conf.maxDataRate || 8000,
     dataRateCheckInterval: conf.dataRateCheckInterval || 3,
     dataRateCheckCount: conf.dataRateCheckCount || 5, 
-    transcode: conf.transcode || true,
-    archive: conf.archive || false,
+    transcode: conf.transcode,
+    archive: conf.archive,
   }
 };
 
