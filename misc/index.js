@@ -57,7 +57,7 @@ if (conf.ffmpeg_path) {
       ac: 'libfdk_aac',
       acParam: ['-ab', '32k'],
       vc: 'libx264',
-      vcParam: ['-vb', '128k', '-preset', 'ultrafast'],
+      vcParam: ['-vc', '-vb', '128k', '-preset', 'ultrafast'],
       hls: true,
       hlsFlags: 'hls_time=1:hls_list_size=5:hls_flags=delete_segments'
     },
@@ -68,7 +68,7 @@ if (conf.ffmpeg_path) {
       ac: 'libfdk_aac',
       acParam: ['-ab', '64k'],
       vc: 'libx264',
-      vcParam: ['-vb', '256k', '-preset', 'ultrafast'],
+      vcParam: ['-vc', '-vb', '256k', '-preset', 'ultrafast'],
       hls: true,
       hlsFlags: 'hls_time=1:hls_list_size=5:hls_flags=delete_segments'
     },
@@ -78,8 +78,8 @@ if (conf.ffmpeg_path) {
       name: '_high',
       ac: 'libfdk_aac',
       acParam: ['-ab', '128k'],
-      vc: 'copy',
-      vcParam: ['-vb', '512k', '-preset', 'ultrafast'],
+      vc: 'libx264',
+      vcParam: ['-vc', '-vb', '512k', '-preset', 'ultrafast'],
       hls: true,
       hlsFlags: 'hls_time=1:hls_list_size=5:hls_flags=delete_segments'
     }
