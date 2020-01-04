@@ -54,7 +54,7 @@ if (conf.ffmpeg_path) {
     {
       app: 'live',
       name: '_low',
-      ac: 'libfdk_aac',
+      ac: 'copy',
       acParam: ['-b:a', '32k'],
       vc: 'copy',
       vcParam: ['-b:v', '128k', '-preset', 'ultrafast'],
@@ -65,7 +65,7 @@ if (conf.ffmpeg_path) {
     {
       app: 'live',
       name: '_medium',
-      ac: 'libfdk_aac',
+      ac: 'copy',
       acParam: ['-b:a', '64k'],
       vc: 'copy',
       vcParam: ['-b:v', '256k', '-preset', 'ultrafast'],
@@ -76,7 +76,7 @@ if (conf.ffmpeg_path) {
     {
       app: 'live',
       name: '_high',
-      ac: 'libfdk_aac',
+      ac: 'copy',
       acParam: ['-b:a', '128k'],
       vc: 'copy',
       vcParam: ['-b:v', '512k', '-preset', 'ultrafast'],
@@ -180,7 +180,7 @@ nms.on('donePublish', (id, StreamPath, args) => {
       })
     .then(response => {
       // eslint-disable-next-line no-console
-      console.log('[donePublish]', response);
+      //console.log('[donePublish]', response);
     })
     .catch(error => {
       // eslint-disable-next-line no-console
