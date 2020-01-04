@@ -57,7 +57,7 @@ if (conf.ffmpeg_path) {
       ac: 'copy',
       acParam: ['-b:a', '32k'],
       vc: 'libx264',
-      vcParam: ['-b:v', '128k', '-preset', 'ultrafast', '-crf', 35, '-pix_fmt', 'yuv420p', '-vf', 'scale=-1:360'],
+      vcParam: ['-s', '640x360', '-b:v', '128k', '-preset', 'ultrafast', '-crf', 35, '-pix_fmt', 'yuv420p', '-vf'],
       hls: true,
       hlsFlags: 'hls_time=1:hls_list_size=5:hls_flags=delete_segments'
     },
@@ -68,7 +68,7 @@ if (conf.ffmpeg_path) {
       ac: 'copy',
       acParam: ['-b:a', '64k'],
       vc: 'libx264',
-      vcParam: ['-b:v', '256k', '-preset', 'ultrafast', '-crf', 35, '-pix_fmt', 'yuv420p', '-vf', 'scale=-1:480'],
+      vcParam: ['-s', 'hd480', '-b:v', '256k', '-preset', 'ultrafast', '-crf', 35, '-pix_fmt', 'yuv420p', '-vf'],
       hls: true,
       hlsFlags: 'hls_time=1:hls_list_size=5:hls_flags=delete_segments'
     },
@@ -79,7 +79,7 @@ if (conf.ffmpeg_path) {
       ac: 'copy',
       acParam: ['-b:a', '128k'],
       vc: 'libx264',
-      vcParam: ['-b:v', '512k', '-preset', 'ultrafast', '-crf', 35, '-pix_fmt', 'yuv420p', '-vf', 'scale=-1:720'],
+      vcParam: ['-s', 'hd720', '-b:v', '512k', '-preset', 'ultrafast', '-crf', 35, '-pix_fmt', 'yuv420p', '-vf'],
       hls: true,
       hlsFlags: 'hls_time=1:hls_list_size=5:hls_flags=delete_segments'
     }
