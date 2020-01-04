@@ -54,10 +54,10 @@ if (conf.ffmpeg_path) {
     {
       app: 'live',
       name: '_low',
-      ac: 'copy',
+      ac: 'libfdk_aac',
       acParam: ['-ab', '32k'],
-      vc: 'copy',
-      vcParam: ['-vc', '128k', '-preset', 'ultrafast'],
+      vc: 'libx264',
+      vcParam: ['-vb', '128k', '-preset', 'ultrafast'],
       hls: true,
       hlsFlags: 'hls_time=1:hls_list_size=5:hls_flags=delete_segments'
     },
@@ -65,10 +65,10 @@ if (conf.ffmpeg_path) {
     {
       app: 'live',
       name: '_medium',
-      ac: 'copy',
+      ac: 'libfdk_aac',
       acParam: ['-ab', '64k'],
-      vc: 'copy',
-      vcParam: ['-vc', '256k', '-preset', 'ultrafast'],
+      vc: 'libx264',
+      vcParam: ['-vb', '256k', '-preset', 'ultrafast'],
       hls: true,
       hlsFlags: 'hls_time=1:hls_list_size=5:hls_flags=delete_segments'
     },
@@ -76,10 +76,10 @@ if (conf.ffmpeg_path) {
     {
       app: 'live',
       name: '_high',
-      ac: 'copy',
+      ac: 'libfdk_aac',
       acParam: ['-ab', '128k'],
       vc: 'copy',
-      vcParam: ['-vc', '512k', '-preset', 'ultrafast'],
+      vcParam: ['-vb', '512k', '-preset', 'ultrafast'],
       hls: true,
       hlsFlags: 'hls_time=1:hls_list_size=5:hls_flags=delete_segments'
     }
