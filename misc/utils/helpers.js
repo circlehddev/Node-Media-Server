@@ -89,12 +89,11 @@ const generateStreamThumbnail = (streamPath) => {
     Logger.log('[Thumbnail generation] screenshot', args)
     let inst = spawn(cmd, args, {
     });
-    console.log('inst', inst);
     inst.stdout.on('data', function(data) {
-        console.log('stdout: ' + data);
+        //console.log('stdout: ' + data);
     });
     inst.stderr.on('data', function(data) {
-        console.log('stderr: ' + data);
+        //console.log('stderr: ' + data);
     });
 
     inst.unref();
