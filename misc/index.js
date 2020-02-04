@@ -55,9 +55,9 @@ if (conf.ffmpeg_path) {
       app: 'live',
       name: '_low',
       ac: 'copy',
-      acParam: ['-b:a', '32k'],
+      acParam: ['-b:a', '96k', '-ar', 48000],
       vc: 'libx264',
-      vcParam: ['-s', '640x360', '-b:v', '128k', '-preset', 'ultrafast', '-crf', 35, '-pix_fmt', 'yuv420p', '-vf'],
+      vcParam: ['-vf', "'scale=480:-1'", '-b:v', '800k', '-preset', 'superfast', '-profile:v', 'baseline', '-bufsize', '1200k','-crf', '35', '-muxdelay', '0', '-copyts', '-tune','zerolatency'],
       hls: true,
       hlsFlags: 'hls_time=1:hls_list_size=5:hls_flags=delete_segments'
     },
@@ -66,9 +66,9 @@ if (conf.ffmpeg_path) {
       app: 'live',
       name: '_medium',
       ac: 'copy',
-      acParam: ['-b:a', '64k'],
+      acParam: ['-b:a', '128k', '-ar', 48000],
       vc: 'libx264',
-      vcParam: ['-s', 'hd480', '-b:v', '256k', '-preset', 'ultrafast', '-crf', 35, '-pix_fmt', 'yuv420p', '-vf'],
+      vcParam: ['-vf', "'scale=854:-1'", '-b:v', '1400k', '-preset', 'superfast', '-profile:v', 'baseline', '-bufsize', '2100k','-crf', '35', '-muxdelay', '0', '-copyts', '-tune','zerolatency'],
       hls: true,
       hlsFlags: 'hls_time=1:hls_list_size=5:hls_flags=delete_segments'
     },
@@ -77,9 +77,9 @@ if (conf.ffmpeg_path) {
       app: 'live',
       name: '_high',
       ac: 'copy',
-      acParam: ['-b:a', '128k'],
+      acParam: ['-b:a', '128k', '-ar', 48000],
       vc: 'libx264',
-      vcParam: ['-s', 'hd720', '-b:v', '512k', '-preset', 'ultrafast', '-crf', 35, '-pix_fmt', 'yuv420p', '-vf'],
+      vcParam: ['-vf', "'scale=1280:-1'", '-b:v', '2800k', '-preset', 'superfast', '-profile:v', 'baseline', '-bufsize', '4200k','-crf', '35', '-muxdelay', '0', '-copyts', '-tune','zerolatency'],
       hls: true,
       hlsFlags: 'hls_time=1:hls_list_size=5:hls_flags=delete_segments'
     }
