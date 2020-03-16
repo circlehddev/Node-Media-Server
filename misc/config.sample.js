@@ -6,6 +6,7 @@ module.exports = {
     http_port: 8000,
     transcode: true,
     archive: false,
+    generateThumbnail: false,
     /*
     https_port: 8443,
     https_cert: '/path/to/cert.pem',

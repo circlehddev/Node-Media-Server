@@ -36,6 +36,7 @@ const config = {
     dataRateCheckCount: conf.dataRateCheckCount || 5, 
     transcode: conf.transcode,
     archive: conf.archive,
+    generateThumbnail: conf.generateThumbnail,
   }
 };
 
@@ -134,26 +135,27 @@ nms.on('onMetaData', (id, metadata) => {
 nms.on('postPublish', (id, StreamPath, args) => {
   let session = nms.getSession(id)
   console.log('[NodeEvent on postPublish]', `id=${id} StreamPath=${StreamPath} args=${JSON.stringify(args)}`);
-  // Create a thumbnail
-  try{
-    helpers.generateStreamThumbnail(session.publishStreamPath);
-  }catch(e){
-  }
+  if(config.misc.generateThumbnail){
+    // Create a thumbnail
+    try{
+      helpers.generateStreamThumbnail(session.publishStreamPath);
+    }catch(e){
+    }
 
-  // Generate a thumbnail every 60 seconds
-  try{
-    let task = cron.schedule('* * * * *', () => {
-      helpers.generateStreamThumbnail(session.publishStreamPath)
-    }, {
-      scheduled: false
-    });
-    // Save tasks in the session so we can stop it later
-    session.task = task;
-    // Start the tasks
-    task.start();
-  }catch(e){
+    // Generate a thumbnail every 60 seconds
+    try{
+      let task = cron.schedule('* * * * *', () => {
+        helpers.generateStreamThumbnail(session.publishStreamPath)
+      }, {
+        scheduled: false
+      });
+      // Save tasks in the session so we can stop it later
+      session.task = task;
+      // Start the tasks
+      task.start();
+    }catch(e){
+    }
   }
-
 });
 
 nms.on('donePublish', (id, StreamPath, args) => {
