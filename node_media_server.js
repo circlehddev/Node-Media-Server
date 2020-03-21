@@ -45,6 +45,12 @@ class NodeMediaServer {
         this.nls.run();
       }
     }
+    
+    Logger.log('Overwriting uncaughtException handler - node-media-server!');
+
+    process.on('uncaughtException', function (err) {
+      Logger.error('uncaughtException', err);
+    });
   }
 
   on(eventName, listener) {
