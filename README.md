@@ -1,3 +1,51 @@
+# Guac-Media-Server
+
+> Node.js rtmp server that has been modified for distribution by an unspecified number of people.
+
+This fork includes custom features made by me, as well as fixes merged from other forks on GitHub (with authorship preserved when possible).
+
+You should check the misc/config.sample.js and misc/index.js files for usage.
+
+**If my fork has helped you in any way, feel free to support me.**  
+[![Support via PayPal](https://cdn.rawgit.com/twolfson/paypal-github-button/1.0.0/dist/button.svg)](https://www.paypal.me/datagutt/)
+
+## New features
+
+- Publish authentication using stream keys (POST request to api_endpoint/live/publish)
+- Publish done callback (POST request to api_endpoint/live/publish_done)
+- Force termination of a stream
+- Option to enable transcoding to multiple video qualities/resolutions (low/medium/high)
+- Bitrate limit (configurable)
+- Generation of thumbnails
+- Archiving of streams (Uploading VOD to Amazon S3-compatible services)
+- Metadata hooks (bitrate, resolution, publisher etc.)
+- Support for running the server in PM2 (single-instance only)
+
+## Fixes
+- [added a catch for an out of range buffer](https://github.com/GuacLive/Guac-Media-Server/commit/aa39f95)
+- [Allow multiple tasks per same stream](https://github.com/GuacLive/Guac-Media-Server/commit/2768a22)
+- [Restart relay when closes unexpectedly](https://github.com/GuacLive/Guac-Media-Server/commit/a33ef89)
+- [Added new hook for when metadata gets set](https://github.com/GuacLive/Guac-Media-Server/commit/4901722)
+- [Add Local Session Info Access](https://github.com/GuacLive/Guac-Media-Server/commit/8d45f2a)
+- [Exposes Context Events Through NodeMediaServer Class](https://github.com/GuacLive/Guac-Media-Server/commit/2a046c1)
+- [fix: add const before LOG_TYPES assingment](https://github.com/GuacLive/Guac-Media-Server/commit/06b367c)
+- [adds possibility to add multiple tasks to the ffmpeg transcoder with different names](https://github.com/GuacLive/Guac-Media-Server/commit/057ba92)
+- [Configurable analyzeduration and probesize](https://github.com/GuacLive/Guac-Media-Server/commit/cfad857)
+- [Creating empty index.m3u8 after transmuxing end](https://github.com/GuacLive/Guac-Media-Server/commit/445ad52)
+- [node_trans_session: Use try/catch when cleaning up files](https://github.com/GuacLive/Guac-Media-Server/commit/37887cc)
+- [Fix memory api typos](https://github.com/GuacLive/Guac-Media-Server/commit/98d4c08)
+- [Regularly check bitrate](https://github.com/GuacLive/Guac-Media-Server/commit/7908799)
+- [Option for en/disabling the API in the config](https://github.com/GuacLive/Guac-Media-Server/commit/21af5e4)
+- [add more opt](https://github.com/GuacLive/Guac-Media-Server/commit/613d524)
+> and probably more that i forgot about
+
+## Used by the following services
+
+- [GuacLive](https://guac.live)
+
+---
+
+
 # Node-Media-Server
 [![npm](https://img.shields.io/node/v/node-media-server.svg)](https://nodejs.org/en/)
 [![npm](https://img.shields.io/npm/v/node-media-server.svg)](https://npmjs.org/package/node-media-server)
