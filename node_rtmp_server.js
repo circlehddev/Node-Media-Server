@@ -4,11 +4,8 @@
 //  Copyright (c) 2018 Nodemedia. All rights reserved.
 //
 const Logger = require('./node_core_logger');
-
 const Net = require('net');
 const NodeRtmpSession = require('./node_rtmp_session');
-const NodeCoreUtils = require('./node_core_utils');
-
 const context = require('./node_core_ctx');
 
 const RTMP_PORT = 1935;
@@ -17,6 +14,7 @@ class NodeRtmpServer {
   constructor(config) {
     config.rtmp.port = this.port = config.rtmp.port ? config.rtmp.port : RTMP_PORT;
     this.tcpServer = Net.createServer((socket) => {
+      socket.on('error', error => Logger.log("NMS: Socket error", error));
       let session = new NodeRtmpSession(config, socket);
       session.run();
     })

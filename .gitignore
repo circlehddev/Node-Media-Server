@@ -31,3 +31,8 @@ node_modules
 *.ts
 *.mp4
 *.mpd
+
+# Guac-additions
+.vscode
+media
+misc/config.js

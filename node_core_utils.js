@@ -58,11 +58,11 @@ function getFFmpegVersion(ffpath) {
     ffmpeg_exec.stdout.on('data', (data) => {
       try {
         version = data.toString().split(/(?:\r\n|\r|\n)/g)[0].split('\ ')[2];
+        resolve(version);
       } catch (e) {
       }
     });
     ffmpeg_exec.on('close', (code) => {
-      resolve(version);
     });
   });
 }

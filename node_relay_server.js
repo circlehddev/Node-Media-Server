@@ -40,7 +40,9 @@ class NodeRelayServer {
     context.nodeEvent.on('donePlay', this.onDonePlay.bind(this));
     context.nodeEvent.on('postPublish', this.onPostPublish.bind(this));
     context.nodeEvent.on('donePublish', this.onDonePublish.bind(this));
-    this.staticCycle = setInterval(this.onStatic.bind(this), 1000);
+    let updateInterval = this.config.relay.update_interval ?
+      this.config.relay.update_interval : 1000;
+    this.staticCycle = setInterval(this.onStatic.bind(this), updateInterval);
     Logger.log('Node Media Relay Server started');
   }
 
@@ -84,9 +86,18 @@ class NodeRelayServer {
     let session = new NodeRelaySession(conf);
     session.id = id;
     session.on('end', (id) => {
-      this.dynamicSessions.delete(id);
+      let list = this.dynamicSessions.get(id);
+      if (list.indexOf(session) > -1) {
+        list.splice(list.indexOf(session), 1);
+        if (list.length == 0) {
+          this.dynamicSessions.delete(id);
+        }
+      }
     });
-    this.dynamicSessions.set(id, session);
+    if (!this.dynamicSessions.has(id)) {
+      this.dynamicSessions.set(id, []);
+    }
+    this.dynamicSessions.get(id).push(session);
     session.run();
     Logger.log('[Relay dynamic pull] start', id, conf.inPath, ' to ', conf.ouPath);
     return id;
@@ -102,9 +113,18 @@ class NodeRelayServer {
     let session = new NodeRelaySession(conf);
     session.id = id;
     session.on('end', (id) => {
-      this.dynamicSessions.delete(id);
+      let list = this.dynamicSessions.get(id);
+      if (list.indexOf(session) > -1) {
+        list.splice(list.indexOf(session), 1);
+        if (list.length == 0) {
+          this.dynamicSessions.delete(id);
+        }
+      }
     });
-    this.dynamicSessions.set(id, session);
+    if (!this.dynamicSessions.has(id)) {
+      this.dynamicSessions.set(id, []);
+    }
+    this.dynamicSessions.get(id).push(session);
     session.run();
     Logger.log('[Relay dynamic push] start', id, conf.inPath, ' to ', conf.ouPath);
   }
@@ -127,9 +147,18 @@ class NodeRelayServer {
         let session = new NodeRelaySession(conf);
         session.id = id;
         session.on('end', (id) => {
-          this.dynamicSessions.delete(id);
+          let list = this.dynamicSessions.get(id);
+          if (list.indexOf(session) > -1) {
+            list.splice(list.indexOf(session), 1);
+            if (list.length == 0) {
+              this.dynamicSessions.delete(id);
+            }
+          }
         });
-        this.dynamicSessions.set(id, session);
+        if (!this.dynamicSessions.has(id)) {
+          this.dynamicSessions.set(id, []);
+        }
+        this.dynamicSessions.get(id).push(session);
         session.run();
         Logger.log('[Relay dynamic pull] start', id, conf.inPath, ' to ', conf.ouPath);
       }
@@ -137,10 +166,10 @@ class NodeRelayServer {
   }
 
   onDonePlay(id, streamPath, args) {
-    let session = this.dynamicSessions.get(id);
+    let list = this.dynamicSessions.get(id);
     let publisher = context.sessions.get(context.publishers.get(streamPath));
-    if (session && publisher.players.size == 0) {
-      session.end();
+    if (list && publisher.players.size == 0) {
+      list.slice().forEach(session => session.end());
     }
   }
 
@@ -162,9 +191,18 @@ class NodeRelayServer {
         let session = new NodeRelaySession(conf);
         session.id = id;
         session.on('end', (id) => {
-          this.dynamicSessions.delete(id);
+          let list = this.dynamicSessions.get(id);
+          if (list.indexOf(session) > -1) {
+            list.splice(list.indexOf(session), 1);
+            if (list.length == 0) {
+              this.dynamicSessions.delete(id);
+            }
+          }
         });
-        this.dynamicSessions.set(id, session);
+        if (!this.dynamicSessions.has(id)) {
+          this.dynamicSessions.set(id, []);
+        }
+        this.dynamicSessions.get(id).push(session);
         session.run();
         Logger.log('[Relay dynamic push] start', id, conf.inPath, ' to ', conf.ouPath);
       }
@@ -173,9 +211,9 @@ class NodeRelayServer {
   }
 
   onDonePublish(id, streamPath, args) {
-    let session = this.dynamicSessions.get(id);
-    if (session) {
-      session.end();
+    let list = this.dynamicSessions.get(id);
+    if (list) {
+      list.slice().forEach(session => session.end());
     }
 
     for (session of this.staticSessions.values()) {
@@ -187,6 +225,14 @@ class NodeRelayServer {
 
   stop() {
     clearInterval(this.staticCycle);
+    this.dynamicSessions.forEach((value, key, map) => {
+      value.end()
+      this.dynamicSessions.delete(key)
+    })
+    this.staticSessions.forEach((value, key, map) => {
+      value.end()
+      this.staticSessions.delete(key)
+    })
   }
 }
 

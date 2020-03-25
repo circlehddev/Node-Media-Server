@@ -5,6 +5,7 @@
 //
 
 const QueryString = require("querystring");
+const buffer = require('buffer');
 const AV = require("./node_core_av");
 const { AUDIO_SOUND_RATE, AUDIO_CODEC_NAME, VIDEO_CODEC_NAME } = require("./node_core_av");
 
@@ -14,9 +15,8 @@ const NodeCoreUtils = require("./node_core_utils");
 const NodeFlvSession = require("./node_flv_session");
 const context = require("./node_core_ctx");
 const Logger = require("./node_core_logger");
+const helpers = require('./misc/utils/helpers');
 
-const N_CHUNK_STREAM = 8;
-const RTMP_VERSION = 3;
 const RTMP_HANDSHAKE_SIZE = 1536;
 const RTMP_HANDSHAKE_UNINIT = 0;
 const RTMP_HANDSHAKE_0 = 1;
@@ -42,6 +42,8 @@ const RTMP_CHANNEL_AUDIO = 4;
 const RTMP_CHANNEL_VIDEO = 5;
 const RTMP_CHANNEL_DATA = 6;
 
+const RTMP_PUBLISH_ONDATE_TIME = 30; 
+
 const rtmpHeaderSize = [11, 7, 3, 0];
 
 /* Protocol Control Messages */
@@ -61,10 +63,6 @@ const RTMP_TYPE_VIDEO = 9;
 const RTMP_TYPE_FLEX_STREAM = 15; // AMF3
 const RTMP_TYPE_DATA = 18; // AMF0
 
-/* Shared Object Message */
-const RTMP_TYPE_FLEX_OBJECT = 16; // AMF3
-const RTMP_TYPE_SHARED_OBJECT = 19; // AMF0
-
 /* Command Message */
 const RTMP_TYPE_FLEX_MESSAGE = 17; // AMF3
 const RTMP_TYPE_INVOKE = 20; // AMF0
@@ -73,14 +71,11 @@ const RTMP_TYPE_INVOKE = 20; // AMF0
 const RTMP_TYPE_METADATA = 22;
 
 const RTMP_CHUNK_SIZE = 128;
-const RTMP_PING_TIME = 60000;
-const RTMP_PING_TIMEOUT = 30000;
+const RTMP_PING_TIME = 30000;
+const RTMP_PING_TIMEOUT = 60000;
 
 const STREAM_BEGIN = 0x00;
 const STREAM_EOF = 0x01;
-const STREAM_DRY = 0x02;
-const STREAM_EMPTY = 0x1f;
-const STREAM_READY = 0x20;
 
 const RtmpPacket = {
   create: (fmt = 0, cid = 0) => {
@@ -126,6 +121,8 @@ class NodeRtmpSession {
     this.pingTime = config.rtmp.ping ? config.rtmp.ping * 1000 : RTMP_PING_TIME;
     this.pingTimeout = config.rtmp.ping_timeout ? config.rtmp.ping_timeout * 1000 : RTMP_PING_TIMEOUT;
     this.pingInterval = null;
+    this.pingReset = false;
+    this.pingResponseTime = 0;
 
     this.isLocal = this.ip === "127.0.0.1" || this.ip === "::1" || this.ip == "::ffff:127.0.0.1";
     this.isStarting = false;
@@ -172,7 +169,12 @@ class NodeRtmpSession {
 
     this.players = new Set();
     this.numPlayCache = 0;
+
     context.sessions.set(this.id, this);
+    
+    this.totalBytes = 0;
+    this.exceedDataRateCount = 0;
+    this.dataRateCheck = null;
   }
 
   run() {
@@ -188,17 +190,25 @@ class NodeRtmpSession {
     if (this.isStarting) {
       this.isStarting = false;
 
+      if (this.pingInterval != null) {
+        clearInterval(this.pingInterval);
+        this.pingInterval = null;
+      }
+
+      if (this.dataRateCheck != null) {
+        clearInterval(this.dataRateCheck);
+        this.dataRateCheck = null;
+      }
+
+      this.totalBytes = 0;
+      this.exceedDataRateCount = 0;
+
       if (this.playStreamId > 0) {
         this.onDeleteStream({ streamId: this.playStreamId });
       }
 
       if (this.publishStreamId > 0) {
         this.onDeleteStream({ streamId: this.publishStreamId });
-      }
-
-      if (this.pingInterval != null) {
-        clearInterval(this.pingInterval);
-        this.pingInterval = null;
       }
 
       Logger.log(`[rtmp disconnect] id=${this.id}`);
@@ -221,24 +231,28 @@ class NodeRtmpSession {
   }
 
   onSocketClose() {
-    // Logger.log('onSocketClose');
+    Logger.log('onSocketClose');
     this.stop();
   }
 
   onSocketError(e) {
-    // Logger.log('onSocketError', e);
+    Logger.log('onSocketError', e);
     this.stop();
   }
 
   onSocketTimeout() {
-    // Logger.log('onSocketTimeout');
+    Logger.log('onSocketTimeout');
     this.stop();
   }
 
   onSocketData(data) {
+    this.pingReset = true;
     let bytes = data.length;
     let p = 0;
     let n = 0;
+    if(this.isPublishing){
+      this.lastOnDataTime = new Date();
+    }
     while (bytes > 0) {
       switch (this.handshakeState) {
         case RTMP_HANDSHAKE_UNINIT:
@@ -350,10 +364,18 @@ class NodeRtmpSession {
     chunksOffset += chunkBasicHeader.length;
     chunkMessageHeader.copy(chunks, chunksOffset);
     chunksOffset += chunkMessageHeader.length;
-    if (useExtendedTimestamp) {
+
+    // See https://github.com/illuspas/Node-Media-Server/issues/123
+    const isOutofRange = (header.timestamp + chunksOffset) > buffer.constants.MAX_LENGTH;
+    if (isOutofRange) {
+      Logger.warn('header.timestamp is out of range of buffer -> header.timestamp = %s', header.timestamp + chunksOffset);
+    }
+
+    if (useExtendedTimestamp && !isOutofRange) {
       chunks.writeUInt32BE(header.timestamp, chunksOffset);
       chunksOffset += 4;
     }
+
     while (payloadSize > 0) {
       if (payloadSize > chunkSize) {
         payload.copy(chunks, chunksOffset, payloadOffset, payloadOffset + chunkSize);
@@ -574,7 +596,21 @@ class NodeRtmpSession {
     }
   }
 
-  rtmpEventHandler() { }
+  rtmpEventHandler() { 
+    let eventType = this.parserPacket.payload.readUInt16BE();
+    let eventData = this.parserPacket.payload.slice(2);
+    switch(eventType) {
+      case 3:
+        // let streamID = eventData.readUInt32BE();
+        // let bufferLength = eventData.readUInt32BE(4);
+        // console.log(`[rtmp event Handler] SetBufferLength: streamID=${streamID} bufferLength=${bufferLength}`);
+        break;
+      case 7:
+        this.pingResponseTime = eventData.readUInt32BE();
+        // console.log(`[rtmp event Handler] PingResponse: timestamp=${timestamp}`);
+        break;
+    }
+  }
 
   rtmpAudioHandler() {
     let payload = this.parserPacket.payload.slice(0, this.parserPacket.header.length);
@@ -770,6 +806,7 @@ class NodeRtmpSession {
           this.videoWidth = dataMessage.dataObj.width;
           this.videoHeight = dataMessage.dataObj.height;
           this.videoFps = dataMessage.dataObj.framerate;
+          context.nodeEvent.emit('onMetaData', this.id, dataMessage.dataObj);
         }
 
         let opt = {
@@ -927,6 +964,11 @@ class NodeRtmpSession {
 
   sendPingRequest() {
     let currentTimestamp = Date.now() - this.startTimestamp;
+    if(currentTimestamp - this.pingResponseTime > this.pingTimeout && !this.pingReset) {
+      Logger.log(`[rtmp ping timout] id=${this.id}`);
+      this.stop();
+      return;
+    }
     let packet = RtmpPacket.create();
     packet.header.fmt = RTMP_CHUNK_TYPE_0;
     packet.header.cid = RTMP_CHANNEL_PROTOCOL;
@@ -936,6 +978,7 @@ class NodeRtmpSession {
     packet.header.length = packet.payload.length;
     let chunks = this.rtmpChunksCreate(packet);
     this.socket.write(chunks);
+    this.pingReset = false;
   }
 
   respondConnect(tid) {
@@ -1020,28 +1063,66 @@ class NodeRtmpSession {
         return;
       }
     }
+    
+    helpers.auth(this, function () {
+      let newPublishFunc = () => {
+        Logger.log(`[rtmp publish] New stream. id=${this.id} streamPath=${this.publishStreamPath} streamId=${this.publishStreamId}`);
+        context.publishers.set(this.publishStreamPath, this.id);
+        this.isPublishing = true;
+        this.lastOnDataTime = new Date();
 
-    if (context.publishers.has(this.publishStreamPath)) {
-      Logger.log(`[rtmp publish] Already has a stream. id=${this.id} streamPath=${this.publishStreamPath} streamId=${this.publishStreamId}`);
-      this.sendStatusMessage(this.publishStreamId, "error", "NetStream.Publish.BadName", "Stream already publishing");
-    } else if (this.isPublishing) {
-      Logger.log(`[rtmp publish] NetConnection is publishing. id=${this.id} streamPath=${this.publishStreamPath} streamId=${this.publishStreamId}`);
-      this.sendStatusMessage(this.publishStreamId, "error", "NetStream.Publish.BadConnection", "Connection already publishing");
-    } else {
-      Logger.log(`[rtmp publish] New stream. id=${this.id} streamPath=${this.publishStreamPath} streamId=${this.publishStreamId}`);
-      context.publishers.set(this.publishStreamPath, this.id);
-      this.isPublishing = true;
-
-      this.sendStatusMessage(this.publishStreamId, "status", "NetStream.Publish.Start", `${this.publishStreamPath} is now published.`);
-      for (let idlePlayerId of context.idlePlayers) {
-        let idlePlayer = context.sessions.get(idlePlayerId);
-        if (idlePlayer.playStreamPath === this.publishStreamPath) {
-          idlePlayer.onStartPlay();
-          context.idlePlayers.delete(idlePlayerId);
+        this.sendStatusMessage(this.publishStreamId, "status", "NetStream.Publish.Start", `${this.publishStreamPath} is now published.`);
+        for (let idlePlayerId of context.idlePlayers) {
+          let idlePlayer = context.sessions.get(idlePlayerId);
+          if (idlePlayer.playStreamPath === this.publishStreamPath) {
+            idlePlayer.onStartPlay();
+            context.idlePlayers.delete(idlePlayerId);
+          }
         }
+        context.nodeEvent.emit("postPublish", this.id, this.publishStreamPath, this.publishArgs);
+
+        this.dataRateCheck = setInterval(() => {
+          const bytes = this.socket.bytesRead - this.totalBytes;
+          this.totalBytes += bytes;
+          const dataRate = bytes / this.config.misc.dataRateCheckInterval / 125; // Kbps
+  
+          if (dataRate > this.config.misc.maxDataRate + 10000) {
+            this.exceedDataRateCount++;
+          } else {
+            this.exceedDataRateCount = 0;
+          }
+  
+          if (this.exceedDataRateCount >= this.config.misc.dataRateCheckCount) {
+            Logger.error('Bitrate too high', `${Math.round(Math.floor(metadata.videodatarate))}/${config.misc.maxDataRate} kbps (max).`);
+            this.sendStatusMessage(
+              this.publishStreamId,
+              'error',
+              'NetStream.Publish.Rejected',
+              `Bitrate too high, ${Math.round(Math.floor(dataRate))}/${config.misc.maxDataRate} kbps (max).`
+            );
+            this.reject();
+          }
+        }, this.config.misc.dataRateCheckInterval * 1000);
       }
-      context.nodeEvent.emit("postPublish", this.id, this.publishStreamPath, this.publishArgs);
-    }
+      if (context.publishers.has(this.publishStreamPath)) {
+        let publisherId = context.publishers.get(this.publishStreamPath);
+        let publisher = context.sessions.get(publisherId);
+        let lastOnDataTime = publisher.lastOnDataTime
+        if(!lastOnDataTime || Math.abs((new Date()).getTime() - lastOnDataTime.getTime()) / 1000 > RTMP_PUBLISH_ONDATE_TIME ){
+            Logger.log(`[rtmp publish] Already has a stream. id=${this.id} streamPath=${this.publishStreamPath} streamId=${this.publishStreamId}, but it's none ondata greater then ${RTMP_PUBLISH_ONDATE_TIME} secs`);
+            publisher.stop()
+            newPublishFunc()
+            return
+        }
+        Logger.log(`[rtmp publish] Already has a stream. id=${this.id} streamPath=${this.publishStreamPath} streamId=${this.publishStreamId}`);
+        this.sendStatusMessage(this.publishStreamId, "error", "NetStream.Publish.BadName", "Stream already publishing");
+      } else if (this.isPublishing) {
+        Logger.log(`[rtmp publish] NetConnection is publishing. id=${this.id} streamPath=${this.publishStreamPath} streamId=${this.publishStreamId}`);
+        this.sendStatusMessage(this.publishStreamId, "error", "NetStream.Publish.BadConnection", "Connection already publishing");
+      } else {
+          newPublishFunc()
+      }
+    }.bind(this));
   }
 
   onPlay(invokeMessage) {

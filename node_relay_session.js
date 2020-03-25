@@ -18,7 +18,8 @@ class NodeRelaySession extends EventEmitter {
 
   run() {
     let format = this.conf.ouPath.startsWith('rtsp://') ? 'rtsp' : 'flv';
-    let argv = ['-fflags', 'nobuffer', '-i', this.conf.inPath, '-c', 'copy', '-f', format, this.conf.ouPath];
+    let argv = ['-fflags', 'nobuffer', '-i', this.conf.inPath, '-c', 'copy', '-f', format, this.conf.ouPath,
+		'-stimeout', '10000000 ','-reconnect', '1', '-reconnect_at_eof', '1', '-reconnect_streamed', '1', '-reconnect_delay_max', '2']
     if (this.conf.inPath[0] === '/' || this.conf.inPath[1] === ':') {
       argv.unshift('-1');
       argv.unshift('-stream_loop');
@@ -48,12 +49,29 @@ class NodeRelaySession extends EventEmitter {
 
     this.ffmpeg_exec.on('close', (code) => {
       Logger.log('[Relay end] id=', this.id);
-      this.emit('end', this.id);
+      this.ffmpeg_exec = null;
+      if (!this._ended) {
+        this._runtimeout = setTimeout(() => {
+          this._runtimeout = null;
+          this.run();
+        }, 1000);
+      } else {
+        this.emit('end', this.id);
+      }
     });
   }
 
   end() {
-    this.ffmpeg_exec.kill();
+    this._ended = true;
+    if (this._runtimeout != null) {
+      clearTimeout(this._runtimeout);
+      this._runtimeout = null;
+    }
+    if (this.ffmpeg_exec) {
+      this.ffmpeg_exec.kill();
+    } else {
+      this.emit('end', this.id);
+    }
   }
 }
 

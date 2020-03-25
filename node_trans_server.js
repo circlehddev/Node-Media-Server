@@ -52,6 +52,13 @@ class NodeTransServer {
     Logger.log(`Node Media Trans Server started for apps: [ ${apps}] , MediaRoot: ${this.config.http.mediaroot}, ffmpeg version: ${version}`);
   }
 
+  stop() {
+    this.transSessions.forEach((session, id) => {
+      session.end();
+      // this.transSessions.delete(id);
+    });
+  }
+
   onPostPublish(id, streamPath, args) {
     let regRes = /\/(.*)\/(.*)/gi.exec(streamPath);
     let [app, name] = _.slice(regRes, 1);
@@ -59,6 +66,8 @@ class NodeTransServer {
     while (i--) {
       let conf = this.config.trans.tasks[i];
       conf.ffmpeg = this.config.trans.ffmpeg;
+      conf.analyzeDuration = this.config.trans.analyzeDuration;
+      conf.probeSize = this.config.trans.probeSize;
       conf.mediaroot = this.config.http.mediaroot;
       conf.rtmpPort = this.config.rtmp.port;
       conf.streamPath = streamPath;
