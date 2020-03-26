@@ -3,46 +3,6 @@ const spawn = require('child_process').spawn;
 const axios = require('axios');
 const Logger = require('../../node_core_logger');
 
-const config = require('../config');
-const cmd = config.ffmpeg_path;
-
-const express = require('express');
-const bodyParser = require('body-parser');
-
-const router = context => {
-  const router = express.Router();
-
-  router.use(
-    bodyParser.urlencoded({
-      extended: true
-    })
-  );
-  router.use(bodyParser.json());
-
-  router.post('/stop', (req, res) => {
-    const { stream } = req.body;
-    const path = '/live/' + stream;
-
-    const id = context.publishers.get(path);
-    if (!id) {
-      return res.end();
-    }
-
-    const session = context.sessions.get(id);
-    if (!session) {
-      return res.end();
-    }
-
-    // Stop thumbnail generation cron
-    if(session.task) session.task.stop();
-
-    session.reject();
-  });
-
-  return router;
-};
-
-
 const auth = (data, callback) => {
     if(data.config.misc.ignore_auth){
         callback();
@@ -106,7 +66,6 @@ let removeStreamThumbnail = (streamPath) => {
     })
 }
 module.exports = {
-    router,
     auth,
     generateStreamThumbnail,
     removeStreamThumbnail
