@@ -20,8 +20,6 @@ const HTTP_MEDIAROOT = './media';
 const Logger = require('./node_core_logger');
 const context = require('./node_core_ctx');
 
-const misc = require('./misc/utils/helpers');
-
 const streamsRoute = require('./api/routes/streams');
 const serverRoute = require('./api/routes/server');
 const relayRoute = require('./api/routes/relay');
@@ -61,7 +59,6 @@ class NodeHttpServer {
       app.use('/api/streams', streamsRoute(context));
       app.use('/api/server', serverRoute(context));
       app.use('/api/relay', relayRoute(context));
-      app.use('/api/misc', misc.router(context));
     }
 
     app.use(Express.static(path.join(__dirname + '/public')));
